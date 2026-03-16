@@ -12,7 +12,6 @@ const DistributorPanel = ({ addNotification }) => {
     fetchItems();
   }, []);
 
-  useEffect(() => {
   const fetchItems = async () => {
     try {
       const response = await api.get('/items');
@@ -24,9 +23,6 @@ const DistributorPanel = ({ addNotification }) => {
       setIsLoading(false);
     }
   };
-
-  fetchItems();
-}, []);
 
   const shipItem = async (itemId) => {
     setActionLoading(true);
