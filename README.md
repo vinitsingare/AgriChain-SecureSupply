@@ -1,192 +1,97 @@
-# 🌾 AgriChain
+# 🌿 TerraFlow: Premium Agri-Supply Chain 🚀
 
-[![Solidity](https://img.shields.io/badge/Solidity-0.8.0-blue.svg)](https://soliditylang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18.3.1-blue.svg)](https://reactjs.org/)
-[![Truffle](https://img.shields.io/badge/Truffle-5.11.5-orange.svg)](https://trufflesuite.com/)
-[![Web3.js](https://img.shields.io/badge/Web3.js-4.16.0-yellow.svg)](https://web3js.readthedocs.io/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green.svg)](https://www.mongodb.com/)
+[![Express](https://img.shields.io/badge/Express-4.21-lightgrey.svg)](https://expressjs.com/)
 
-A blockchain-based agricultural supply chain management system that provides complete transparency and traceability from farm to consumer. Built on Ethereum blockchain with smart contracts, this platform enables farmers, distributors, retailers, and consumers to track agricultural products through the entire supply chain with real-time price transparency and margin tracking.
+**TerraFlow** is a modern, premium MERN stack application designed to bring complete transparency and traceability to the agricultural supply chain. Built with a stunning **Glassmorphism** design system, it enables a seamless flow of information from the farmer's harvest all the way to the consumer's table.
 
-## ✨ Features
+---
 
-- **🔗 Multi-Role Supply Chain**: Complete workflow from Farmer → Distributor → Retailer → Consumer
-- **📊 Item State Tracking**: Real-time tracking of product states through the supply chain
-- **💰 Price Transparency**: Complete price breakdown showing margins at each stage
-- **🔍 Margin Tracking**: Distributors and retailers can set profit margins with full transparency
-- **🌐 Web3 Integration**: Direct blockchain interaction via MetaMask or Web3 providers
-- **📱 Responsive UI**: Modern React-based interface for all user roles
-- **🔒 Smart Contract Security**: Secure Ethereum smart contracts for immutable record-keeping
-- **📡 RESTful API**: Comprehensive backend API for supply chain operations
+## ✨ Key Features
+
+- **💎 Premium Glassmorphic UI**: A state-of-the-art interface featuring smooth gradients, backdrop blurs, and modern typography (Inter & Poppins).
+- **📋 One-Click Traceability**: Integrated "Copy ID" system across all panels to make tracking 24-character product IDs effortless.
+- **🛤️ Journey History**: A sleek vertical timeline that visualizes the entire path of a product, including stakeholder details and timestamped transitions.
+- **💰 Price Transparency**: Real-time margin tracking and price breakdowns, ensuring consumers know exactly what they are paying for.
+- **🔍 QR Code Verification**: Instant authenticity verification using generated QR codes for every product.
+- **🤝 Role-Based Access Control**: Tailored dashboards for **Farmers**, **Distributors**, **Retailers**, and **Consumers**.
+
+---
 
 ## 🛠️ Tech Stack
 
-### Blockchain Layer
-- **Solidity 0.8.0**: Smart contract development
-- **Truffle Suite**: Development framework, testing, and asset pipeline
-- **Web3.js 4.16.0**: Ethereum JavaScript API
+- **Frontend**: React.js with Vanilla CSS (Premium Design System)
+- **Backend**: Node.js & Express.js
+- **Database**: MongoDB (Mongoose ODM)
+- **Authentication**: JWT (JSON Web Tokens) with Role-based protection
+- **Tools**: Context API for state management, Axios for data fetching
 
-### Backend
-- **Node.js**: Runtime environment
-- **Express.js**: Web application framework
-- **CORS**: Cross-origin resource sharing
+---
 
-### Frontend
-- **React 18.3.1**: User interface library
-- **Axios**: HTTP client for API calls
-- **QR Code Generation**: For product tracking
+## 🚀 Quick Start
 
-### Development Tools
-- **Ganache**: Local blockchain development
-- **MetaMask**: Browser extension for blockchain interaction
+### 1. Prerequisites
+- **Node.js** (v16 or higher)
+- **MongoDB** (Local instance or Atlas connection string)
 
-## 📋 Prerequisites
-
-Before running this application, make sure you have the following installed:
-
-- [Node.js](https://nodejs.org/) (v16 or higher)
-- [Truffle Suite](https://trufflesuite.com/) (`npm install -g truffle`)
-- [Ganache](https://trufflesuite.com/ganache/) (local blockchain)
-- [MetaMask](https://metamask.io/) (browser extension)
-
-## 🚀 Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd AgriChainProject
-   ```
-
-2. **Install root dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Install client dependencies**
-   ```bash
-   cd client
-   npm install
-   cd ..
-   ```
-
-4. **Start Ganache**
-   - Open Ganache application
-   - Create a new workspace or use default settings
-   - Note the RPC server (usually `http://127.0.0.1:7545`)
-
-5. **Compile and deploy smart contracts**
-   ```bash
-   npm run compile
-   npm run migrate
-   ```
-
-6. **Start the application**
-   ```bash
-   npm start
-   ```
-
-This will start both the backend server (port 5000) and React frontend (port 3000).
-
-## 📖 Usage
-
-### Quick Start
-1. Open your browser and navigate to `http://localhost:3000`
-2. Connect your MetaMask wallet to the local Ganache network
-3. Select a role (Farmer, Distributor, Retailer, or Consumer)
-4. Follow the supply chain flow as described below
-
-### Supply Chain Flow
-
-```
-🌾 Farmer → 🚚 Distributor → 🏪 Retailer → 🛒 Consumer
+### 2. Configuration
+Create a `.env` file in the `server/` directory:
+```env
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_super_secret_key
 ```
 
-#### 1. Farmer Role
-- Register as a farmer
-- Harvest items with details (name, origin, price, quality)
-- Items become available for distributors to purchase
+### 3. Installation
+From the root directory, run:
+```bash
+# Install root dependencies
+npm install
 
-#### 2. Distributor Role
-- Register as a distributor
-- Purchase harvested items from farmers
-- Set profit margins on purchased items
-- Ship items to retailers
+# Install client dependencies
+cd client && npm install && cd ..
+```
 
-#### 3. Retailer Role
-- Register as a retailer
-- Receive shipped items from distributors
-- Set profit margins on received items
-- Purchase items to make them available for consumers
+### 4. Running the App
+Start both the backend and frontend simultaneously:
+```bash
+npm start
+```
+The app will be available at `http://localhost:3000`.
 
-#### 4. Consumer Role
-- Browse items available for sale
-- View complete price breakdowns and margins
-- Purchase final products
+---
 
-For detailed usage instructions, see:
-- [Supply Chain Guide](./SUPPLY_CHAIN_GUIDE.md)
-- [Price Tracking Guide](./PRICE_TRACKING_GUIDE.md)
+## 📖 Supply Chain Flow
 
-## 🔌 API Endpoints
+1.  **🌾 Farmer**: Harvests products with details like origin, price, and quality.
+2.  **🚚 Distributor**: Purchases from farmers, sets profit margins, and ships to retailers.
+3.  **🏪 Retailer**: Receives shipments, adjusts consumer pricing (margins), and lists for sale.
+4.  **🛒 Consumer**: Tracks product history, views price breakdowns, and purchases verified goods.
 
-### User Management
-- `POST /addfarmer` - Register a farmer
-- `POST /adddistributor` - Register a distributor
-- `POST /addretailer` - Register a retailer
-- `GET /accounts` - Get available blockchain accounts
-
-### Supply Chain Operations
-- `POST /harvest` - Record item harvest
-- `POST /purchase-by-distributor` - Distributor purchases item
-- `POST /set-distributor-margin` - Set distributor margin
-- `POST /ship-by-distributor` - Ship item to retailer
-- `POST /receive-by-retailer` - Retailer receives item
-- `POST /set-retailer-margin` - Set retailer margin
-- `POST /purchase-by-retailer` - Retailer purchases from distributor
-- `POST /purchase-by-consumer` - Consumer purchases final product
-
-### Data Retrieval
-- `GET /items` - Get all items in supply chain
-- `GET /item/:id` - Get specific item details
-- `GET /price-breakdown/:id` - Get price breakdown for item
+---
 
 ## 📁 Project Structure
 
 ```
-AgriChainProject/
-├── contracts/                 # Solidity smart contracts
-│   └── AgriSupplyChain.sol
-├── migrations/               # Truffle migration scripts
-│   └── 1_deploy_contract.js
-├── server/                   # Backend Node.js/Express server
-│   └── index.js
-├── client/                   # React frontend application
-│   ├── public/
-│   ├── src/
-│   │   ├── components/       # React components
-│   │   ├── App.js
-│   │   └── index.js
-│   └── package.json
-├── build/                    # Compiled contracts
-├── test-scripts/             # Various testing and debug scripts
-├── SUPPLY_CHAIN_GUIDE.md     # Detailed supply chain flow guide
-├── PRICE_TRACKING_GUIDE.md   # Price tracking features guide
-├── package.json
-├── truffle-config.js
-└── README.md
+agrichain-fsd/
+├── server/             # Express.js Backend & API
+├── client/             # React.js Frontend & Premium Design System
+│   └── src/
+│       ├── components/ # Role-specific panels & Shared components
+│       └── App.css     # Global Glassmorphic branding
+├── .env                # Environment variables
+└── README.md           # Documentation
 ```
 
-## 🤝 Contributing
+---
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 🙏 Credits
 
-## 📄 License
+TerraFlow was built with a focus on visual excellence and supply chain integrity. It aims to empower farmers and inform consumers through modern technology.
 
-This project is licensed under the ISC License - see the package.json file for details.
+**Happy Farming! 🌾✨**
+.
 
 ## 🙏 Acknowledgments
 
