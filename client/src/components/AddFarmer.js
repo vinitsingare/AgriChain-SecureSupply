@@ -37,7 +37,7 @@ const AddFarmer = ({ accounts, addNotification }) => {
     <div className="add-farmer">
       <div className="page-header">
         <h2>🧑‍🌾 Add New Farmer</h2>
-        <p>Register a new farmer account on the blockchain</p>
+        <p>Register a new farmer</p>
       </div>
 
       <div className="form-container">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../utils/api';
+import api, { API_URL } from '../utils/api';
 
 const Dashboard = ({ user, addNotification }) => {
   const [stats, setStats] = useState({
@@ -28,7 +28,12 @@ const Dashboard = ({ user, addNotification }) => {
           name: item.name,
           farmer: item.farmer?.name || 'Unknown',
           date: new Date(item.createdAt).toLocaleDateString(),
-          state: item.state
+          state: item.state,
+          quantity: item.quantity,
+          remainingQuantity: item.remainingQuantity,
+          unit: item.unit || 'Kgs',
+          farmerPrice: item.farmerPrice,
+          imageUrl: item.imageUrl
         }));
 
         setAllItems(formattedItems);
@@ -116,9 +121,17 @@ const Dashboard = ({ user, addNotification }) => {
           {stats.recentItems.length > 0 ? (
               stats.recentItems.map(item => (
                 <div key={item.id} className="item-card">
+                  {item.imageUrl && (
+                    <div className="item-card-image" style={{width: '100%', height: '120px', overflow: 'hidden'}}>
+                      <img src={item.imageUrl.startsWith('http') ? item.imageUrl : `${API_URL}${item.imageUrl}`} alt={item.name} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                    </div>
+                  )}
                   <div className="item-info">
                     <h4>{item.name}</h4>
                     <p>Farmer: {item.farmer}</p>
+                    {item.quantity && (
+                      <p style={{color: '#059669', fontWeight: '600'}}>📦 {item.remainingQuantity || item.quantity}/{item.quantity} {item.unit} | ₹{item.farmerPrice}/{item.unit}</p>
+                    )}
                     <span className="item-date">{item.date}</span>
                   </div>
                   <div className="item-status">
@@ -198,6 +211,11 @@ const Dashboard = ({ user, addNotification }) => {
         {allItems.length > 0 ? (
           allItems.map(item => (
             <div key={item.id} className="item-card">
+              {item.imageUrl && (
+                <div className="item-image" style={{width: '100%', height: '200px', overflow: 'hidden', borderBottom: '1px solid #e2e8f0'}}>
+                  <img src={item.imageUrl.startsWith('http') ? item.imageUrl : `${API_URL}${item.imageUrl}`} alt={item.name} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                </div>
+              )}
               <div className="item-header" style={{padding: '1.5rem', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'}}>
                 <h4>{item.name}</h4>
                 <div className="id-label">
@@ -219,6 +237,12 @@ const Dashboard = ({ user, addNotification }) => {
               <div className="item-details" style={{padding: '1.5rem', gridTemplateColumns: '1fr'}}>
                 <p><strong>Farmer:</strong> {item.farmer}</p>
                 <p><strong>Harvest Date:</strong> {item.date}</p>
+                {item.quantity && (
+                  <p><strong>Quantity:</strong> <span style={{color: '#059669', fontWeight: '600'}}>{item.remainingQuantity || item.quantity}/{item.quantity} {item.unit}</span></p>
+                )}
+                {item.farmerPrice && (
+                  <p><strong>Price:</strong> ₹{item.farmerPrice}/{item.unit} {item.quantity ? `(Total: ₹${(item.farmerPrice * item.quantity).toFixed(2)})` : ''}</p>
+                )}
                 <p><strong>Current Status:</strong> <span className={`status-badge state-${item.state}`} style={{display: 'inline-block', width: 'fit-content', marginTop: '0.5rem'}}>{item.state}</span></p>
               </div>
             </div>

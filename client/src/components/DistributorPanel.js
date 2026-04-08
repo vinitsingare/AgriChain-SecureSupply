@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import api from '../utils/api';
-// import PriceBreakdown from './PriceBreakdown'; // If you still want to use it, ensure it's updated too
+import api, { API_URL } from '../utils/api';
+import PriceBreakdown from './PriceBreakdown';
 
 const DistributorPanel = ({ addNotification }) => {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [marginInputs, setMarginInputs] = useState({});
+  const [quantityInputs, setQuantityInputs] = useState({});
+  const [transparencyItem, setTransparencyItem] = useState(null);
 
   useEffect(() => {
     fetchItems();
@@ -24,56 +26,55 @@ const DistributorPanel = ({ addNotification }) => {
     }
   };
 
-  const shipItem = async (itemId) => {
-    setActionLoading(true);
-    try {
-      const response = await api.post('/ship-by-distributor', { itemId });
+  const processItemByDistributor = async (itemId) => {
+    const qty = parseFloat(quantityInputs[itemId]);
+    const margin = parseFloat(marginInputs[itemId]);
+    const item = items.find(i => i._id === itemId);
 
-      if (response.status === 200) {
-        addNotification('✅ Item shipped successfully!', 'success');
-        fetchItems(); // Refresh items
-      }
-    } catch (error) {
-      addNotification(`❌ Shipping failed: ${error.response?.data?.message || error.message}`, 'error');
-    } finally {
-      setActionLoading(false);
+    if (!item) return;
+
+    const maxQty = item.remainingQuantity !== undefined ? item.remainingQuantity : item.quantity;
+
+    if (isNaN(margin) || margin < 0) {
+      addNotification('❌ Please enter a valid margin', 'error');
+      return;
     }
-  };
+    if (isNaN(qty) || qty <= 0) {
+      addNotification('❌ Please enter a valid quantity', 'error');
+      return;
+    }
+    if (qty > maxQty) {
+      addNotification(`❌ Quantity exceeds limit. Only ${maxQty} ${item.unit || 'Kgs'} available.`, 'error');
+      return;
+    }
 
-  const setMargin = async (itemId, margin) => {
     setActionLoading(true);
     try {
-      const response = await api.post('/set-distributor-margin', {
+      // 1. Purchase item from farmer (splits the item, returns new child item)
+      const purchaseRes = await api.post('/purchase-by-distributor', {
         itemId,
-        margin: parseFloat(margin)
+        quantity: qty
       });
 
-      if (response.status === 200) {
-        addNotification('✅ Margin set successfully!', 'success');
-        fetchItems(); // Refresh items
-        setMarginInputs(prev => ({ ...prev, [itemId]: '' })); // Clear input
-      }
-    } catch (error) {
-      addNotification(`❌ Failed to set margin: ${error.response?.data?.message || error.message}`, 'error');
-    } finally {
-      setActionLoading(false);
-    }
-  };
+      const childItem = purchaseRes.data.item;
 
-  const purchaseItem = async (itemId, price) => {
-    setActionLoading(true);
-    try {
-      const response = await api.post('/purchase-by-distributor', {
-        itemId,
-        price: price
+      // 2. Set margin on the newly purchased quantity
+      await api.post('/set-distributor-margin', {
+        itemId: childItem._id,
+        margin: margin
       });
 
-      if (response.status === 200) {
-        addNotification('✅ Item purchased successfully!', 'success');
-        fetchItems(); // Refresh items
-      }
+      // 3. Immediately ship it to the retailer
+      await api.post('/ship-by-distributor', { 
+        itemId: childItem._id 
+      });
+
+      addNotification(`✅ Processed & Shipped ${qty} Kgs successfully!`, 'success');
+      setQuantityInputs(prev => ({ ...prev, [itemId]: '' }));
+      setMarginInputs(prev => ({ ...prev, [itemId]: '' }));
+      fetchItems();
     } catch (error) {
-      addNotification(`❌ Purchase failed: ${error.response?.data?.message || error.message}`, 'error');
+      addNotification(`❌ Processing failed: ${error.response?.data?.error || error.response?.data?.message || error.message}`, 'error');
     } finally {
       setActionLoading(false);
     }
@@ -91,12 +92,11 @@ const DistributorPanel = ({ addNotification }) => {
     return states[state] || state || 'Unknown';
   };
 
-  // In MERN, the items are filtered by state and potentially by the logged in distributor
   const getAvailableItems = () => {
     return items.filter(item => 
-      (item.state === 'Harvested') || // Harvested - any distributor can purchase
-      (item.state === 'PurchasedByDistributor') || // Purchased - can set margin and ship
-      (item.state === 'ShippedByDistributor')    // Shipped - view status
+      (item.state === 'Harvested') ||
+      (item.state === 'PurchasedByDistributor') ||
+      (item.state === 'ShippedByDistributor')
     );
   };
 
@@ -133,6 +133,11 @@ const DistributorPanel = ({ addNotification }) => {
           ) : (
             availableItems.map(item => (
               <div key={item._id} className="item-card">
+                {item.imageUrl && (
+                  <div className="item-card-image">
+                    <img src={item.imageUrl.startsWith('http') ? item.imageUrl : `${API_URL}${item.imageUrl}`} alt={item.name} />
+                  </div>
+                )}
                 <div className="item-header">
                   <h4>{item.name}</h4>
                   <div className="id-label">
@@ -158,7 +163,9 @@ const DistributorPanel = ({ addNotification }) => {
                 <div className="item-details">
                   <p><strong>Origin:</strong> {item.origin}</p>
                   <p><strong>Quality:</strong> {item.quality}</p>
-                  <p><strong>Farmer Price:</strong> ₹{item.farmerPrice}</p>
+                  <p><strong>Price/Kg:</strong> ₹{item.farmerPrice}</p>
+                  <p><strong>Total Harvested:</strong> {item.quantity} {item.unit || 'Kgs'}</p>
+                  <p><strong>Available to Purchase:</strong> <span style={{color: '#059669', fontWeight: '700'}}>{item.remainingQuantity !== undefined ? item.remainingQuantity : item.quantity} {item.unit || 'Kgs'}</span></p>
                   <p><strong>Farmer:</strong> {item.farmer?.name || 'Unknown'}</p>
                   {item.distributor && (
                     <p><strong>Distributor:</strong> {item.distributor?.name || 'Assigned'}</p>
@@ -166,52 +173,82 @@ const DistributorPanel = ({ addNotification }) => {
                 </div>
                 <div className="item-actions">
                   {(item.state === 'Harvested') && (
-                    <button 
-                      className="action-button purchase"
-                      onClick={() => purchaseItem(item._id, item.farmerPrice)}
-                      disabled={actionLoading}
-                    >
-                      Purchase from Farmer
-                    </button>
-                  )}
-                  {(item.state === 'PurchasedByDistributor') && (
                     <div className="margin-section">
                       <div className="margin-input-group">
-                        <label>Set Your Distributor Margin (₹):</label>
+                        <label>1. Set Distributor Margin (₹/Kg):</label>
                         <input
                           type="number"
-                          placeholder="Enter margin (e.g., 50)"
+                          placeholder="e.g., 10"
                           value={marginInputs[item._id] || ''}
+                          min="0"
+                          step="0.01"
                           onChange={(e) => setMarginInputs(prev => ({ 
                             ...prev, 
                             [item._id]: e.target.value 
                           }))}
                         />
-                        <button 
-                          className="action-button margin"
-                          onClick={() => setMargin(item._id, marginInputs[item._id])}
-                          disabled={actionLoading || !marginInputs[item._id]}
-                        >
-                          Set Margin
-                        </button>
                       </div>
+                      <div className="margin-input-group" style={{marginTop: '0.75rem'}}>
+                        <label>2. Quantity to Process ({item.unit || 'Kgs'}):</label>
+                        <input
+                          type="number"
+                          placeholder={`Max: ${item.remainingQuantity !== undefined ? item.remainingQuantity : item.quantity}`}
+                          value={quantityInputs[item._id] || ''}
+                          min="0.1"
+                          max={item.remainingQuantity !== undefined ? item.remainingQuantity : item.quantity}
+                          step="0.1"
+                          onChange={(e) => setQuantityInputs(prev => ({ 
+                            ...prev, 
+                            [item._id]: e.target.value 
+                          }))}
+                        />
+                      </div>
+                      {quantityInputs[item._id] && parseFloat(quantityInputs[item._id]) > 0 && (
+                        <div className="price-info" style={{marginTop: '0.5rem', marginBottom: '0.75rem', padding: '0.75rem', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0'}}>
+                          <small style={{color: '#059669', fontWeight: '600'}}>
+                            💰 Purchase Cost: ₹{(parseFloat(quantityInputs[item._id]) * item.farmerPrice).toFixed(2)}
+                          </small>
+                          <br/>
+                          <small style={{color: '#6b7280'}}>
+                            (₹{item.farmerPrice}/Kg × {quantityInputs[item._id]} Kgs)
+                          </small>
+                        </div>
+                      )}
                       <button 
                         className="action-button ship"
-                        onClick={() => shipItem(item._id)}
-                        disabled={actionLoading}
+                        onClick={() => processItemByDistributor(item._id)}
+                        disabled={actionLoading || !marginInputs[item._id] || !quantityInputs[item._id]}
                       >
-                        Ship Item
+                        Process & Ship Selected Quantity
                       </button>
-                      <div className="price-info">
-                        <small>Purchase price: ₹{item.farmerPrice}</small>
-                      </div>
+                      <button 
+                        className="action-button"
+                        style={{ marginTop: '0.75rem', width: '100%', backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1', padding: '0.6rem', fontSize: '0.85rem' }}
+                        onClick={() => setTransparencyItem(item._id)}
+                      >
+                        🔍 View Transparency
+                      </button>
+                    </div>
+                  )}
+                  {/* Keep legacy states logic just in case an item gets stuck */}
+                  {(item.state === 'PurchasedByDistributor') && (
+                    <div className="action-info">
+                      <span className="waiting-badge">Processing...</span>
+                      <p className="action-help">This item is partially processed.</p>
                     </div>
                   )}
                   {(item.state === 'ShippedByDistributor') && (
                     <div className="action-info">
                       <span className="shipped-badge">✅ Shipped</span>
                       <p className="action-help">This item has been shipped to retailer.</p>
-                      <small>Distributor Price: ₹{item.distributorPrice}</small>
+                      <small>Distributor Qty: {item.quantity} {item.unit || 'Kgs'}</small>
+                      <button 
+                        className="action-button"
+                        style={{ marginTop: '1rem', width: '100%', backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1', padding: '0.6rem', fontSize: '0.85rem' }}
+                        onClick={() => setTransparencyItem(item._id)}
+                      >
+                        🔍 View Transparency
+                      </button>
                     </div>
                   )}
                 </div>
@@ -220,6 +257,15 @@ const DistributorPanel = ({ addNotification }) => {
           )}
         </div>
       </div>
+
+      {transparencyItem && (
+        <div className="modal-overlay" onClick={() => setTransparencyItem(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setTransparencyItem(null)}>✖</button>
+            <PriceBreakdown itemId={transparencyItem} addNotification={addNotification} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

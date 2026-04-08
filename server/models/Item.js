@@ -13,6 +13,24 @@ const itemSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    quantity: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    remainingQuantity: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    unit: {
+        type: String,
+        default: 'Kgs'
+    },
+    parentItem: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Item'
+    },
     distributorPrice: {
         type: Number,
         default: 0
@@ -75,6 +93,10 @@ const itemSchema = new mongoose.Schema({
             }
         }
     ],
+    imageUrl: {
+        type: String,
+        default: ''
+    },
     createdAt: {
         type: Date,
         default: Date.now

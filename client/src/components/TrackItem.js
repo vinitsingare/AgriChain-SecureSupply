@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import api from '../utils/api';
+import api, { API_URL } from '../utils/api';
 
 const TrackItem = ({ addNotification }) => {
   const [itemId, setItemId] = useState('');
@@ -99,6 +99,12 @@ const TrackItem = ({ addNotification }) => {
             </h4>
           </div>
 
+          {item.imageUrl && (
+            <div className="track-image-container" style={{marginBottom: '2rem', textAlign: 'center', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', background: 'white', padding: '10px'}}>
+              <img src={item.imageUrl.startsWith('http') ? item.imageUrl : `${API_URL}${item.imageUrl}`} alt={item.name} style={{maxWidth: '100%', maxHeight: '300px', objectFit: 'cover', borderRadius: '12px'}} />
+            </div>
+          )}
+
           <div className="supply-chain-section modern-supply-section">
             <h4 className="modern-card-title" style={{textAlign: 'center', marginBottom: '2rem'}}>🛤️ Journey History</h4>
             <div className="supply-chain modern-timeline">
@@ -153,8 +159,20 @@ const TrackItem = ({ addNotification }) => {
                   <span className="quality-badge modern-quality">{item.quality}</span>
                 </div>
                 <div className="detail-item modern-item">
-                  <strong className="modern-label">Price:</strong>
+                  <strong className="modern-label">Quantity:</strong>
+                  <span className="modern-value">{item.quantity || 'N/A'} {item.unit || 'Kgs'}</span>
+                </div>
+                <div className="detail-item modern-item">
+                  <strong className="modern-label">Remaining:</strong>
+                  <span className="modern-value" style={{color: '#059669', fontWeight: '700'}}>{item.remainingQuantity != null ? item.remainingQuantity : item.quantity || 'N/A'} {item.unit || 'Kgs'}</span>
+                </div>
+                <div className="detail-item modern-item">
+                  <strong className="modern-label">Price/Kg:</strong>
                   <span className="modern-value">₹{item.retailerPrice || item.distributorPrice || item.farmerPrice}</span>
+                </div>
+                <div className="detail-item modern-item">
+                  <strong className="modern-label">Total Value:</strong>
+                  <span className="modern-value" style={{fontWeight: '700', color: '#059669'}}>₹{((item.retailerPrice || item.distributorPrice || item.farmerPrice) * (item.quantity || 1)).toFixed(2)}</span>
                 </div>
               </div>
             </div>
